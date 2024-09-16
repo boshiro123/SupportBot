@@ -1,0 +1,26 @@
+version: '3.5'
+
+services:
+
+  db:
+#   restart: always
+   image: postgres:15.2
+   container_name: messages_bot
+   environment:
+     POSTGRES_USER: root
+     POSTGRES_PASSWORD: root
+     POSTGRES_DB: messages_bot
+
+   ports:
+     - 5432:5432
+
+
+  app:
+   container_name: LOVE_SUPPORT
+   build: .
+   ports:
+     - 8080:8080
+   depends_on:
+     - db
+   environment:
+     SPRING_DATASOURCE_URL: 'jdbc:postgresql://db:5432/messages_bot'
