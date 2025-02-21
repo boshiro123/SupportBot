@@ -15,6 +15,9 @@ docker compose --env-file .env \
 # Ждем готовности PostgreSQL
 ./scripts/wait-for-it.sh localhost:${POSTGRESDB_LOCAL_PORT} --timeout=60 --strict -- echo "PostgreSQL готов"
 
+# Ждем готовности PgAdmin
+./scripts/wait-for-it.sh localhost:5050 --timeout=60 --strict -- echo "PgAdmin готов"
+
 # Запускаем основное приложение
 echo "Запуск Spring Boot приложения..."
 docker compose --env-file .env \
