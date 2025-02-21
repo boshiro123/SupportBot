@@ -1,24 +1,43 @@
-version: '3.5'
-
 services:
+  bot-service:
+    container_name: bot-service
+    build: .
+    ports:
+      - ${SPRING_LOCAL_PORT}:${SPRING_DOCKER_PORT}
+    env_file: .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://support_db:${POSTGRESDB_DOCKER_PORT}/${POSTGRESDB_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRESDB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRESDB_ROOT_PASSWORD}
+    depends_on:
+      - support_db
+    networks:
+      - support-network
 
-  db:
-#   restart: always
-   image: postgres:15.2
-   container_name: messages_bot
-   environment:
-     POSTGRES_USER: root
-     POSTGRES_PASSWORD: root
-     POSTGRES_DB: messages_bot
-   ports:
-     - 1234:5432
+  support_db:
+    container_name: support_db
+    image: postgres:16
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRESDB_USER}
+      POSTGRES_PASSWORD: ${POSTGRESDB_ROOT_PASSWORD}
+      PGDATA: /var/lib/postgresql/data
+      POSTGRES_DB: ${POSTGRESDB_DATABASE}
+    volumes:
+      - postgres:/data/postgres
+      - ./docker/db-init:/docker-entrypoint-initdb.d
+    ports:
+      - ${POSTGRESDB_LOCAL_PORT}:${POSTGRESDB_DOCKER_PORT}
+    restart: unless-stopped
+    networks:
+      - support-network
 
-  app:
-   container_name: LOVE_SUPPORT
-   build: .
-   ports:
-     - 8080:8080
-   depends_on:
-     - db
-   environment:
-     SPRING_DATASOURCE_URL: 'jdbc:postgresql://db:5432/messages_bot'
+networks:
+  support-network:
+    external: true
+    name: support-network
+    driver: bridge
+
+volumes:
+  postgres:
+    driver: local
