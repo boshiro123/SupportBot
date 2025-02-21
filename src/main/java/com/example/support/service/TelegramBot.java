@@ -1,6 +1,5 @@
 package com.example.support.service;
 
-
 import com.example.support.config.BotConfig;
 import com.example.support.models.Messages;
 import com.example.support.repository.MessagesRepository;
@@ -18,7 +17,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -92,13 +90,13 @@ public class TelegramBot extends TelegramLongPollingBot {
             "С каждым днем я все больше и больше влюбляюсь в тебя. Ты - мой ангел-хранитель на земле.",
             "Твоя красота - это не только внешность, но и внутренний свет. Ты - искренняя, добрая и удивительная."));
 
-    public TelegramBot(BotConfig config){
+    public TelegramBot(BotConfig config) {
         this.config = config;
         List<BotCommand> listOfCommands = new ArrayList<>();
-        listOfCommands.add(new BotCommand("/start","начать работу с ботом"));
-        try{
-            this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(),null));
-        }catch (TelegramApiException e){
+        listOfCommands.add(new BotCommand("/start", "начать работу с ботом"));
+        try {
+            this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
+        } catch (TelegramApiException e) {
             log.error(e.getMessage());
         }
     }
@@ -115,47 +113,51 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if(update.hasMessage() && update.getMessage().hasText()){
-            String messageText = update.getMessage().getText(); 
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            String messageText = update.getMessage().getText();
+            String answerText;
             long chatID = update.getMessage().getChatId();
             System.out.println(update.getMessage().getChat());
             log.info("Новое сообщение от " + update.getMessage().getChat().getFirstName() + ": " + messageText);
-            if(update.getMessage().getChat().getUserName()==null){
+            if (update.getMessage().getChat().getUserName() == null) {
                 sendMessage(chatID, "Ваш @userName недоступен, добавьте его для дальнейшей работы с ботом\n" +
                         "Для этого идете в Настройки->Выбрать имя пользователя, здесь его и создаете.");
-            }
-            else if(update.getMessage().getChat().getUserName().equals("mogiloverr") || update.getMessage().getChat().getUserName().equals("boshiro_123") ) {
+            } else if (update.getMessage().getChat().getUserName().equals("mogiloverr")
+                    || update.getMessage().getChat().getUserName().equals("boshiro_123")) {
                 switch (messageText) {
-                    //БАЗОВЫЙ КЕЙСЫ
+                    // БАЗОВЫЙ КЕЙСЫ
                     case "/start":
-                            startCommandReceived(chatID);
+                        startCommandReceived(chatID);
                         break;
                     case "Поддержка!":
-                        sendMessage(chatID,texts.get(new Random().nextInt(texts.size()-1)));
+                        answerText = texts.get(new Random().nextInt(texts.size() - 1));
+                        sendMessage(chatID, answerText);
+                        sendMessage(733743450, "Котя получила поддержку: " + answerText);
                         break;
                     default:
                         Messages newMessage = new Messages();
                         newMessage.setUserName(update.getMessage().getChat().getUserName());
                         newMessage.setMessage(update.getMessage().getText());
                         repository.save(newMessage);
-                        sendMessage(chatID,"Запомнил :D");
+                        sendMessage(chatID, "Запомнил :D");
                 }
             }
         }
     }
 
-    private void startCommandReceived(long chatID){
+    private void startCommandReceived(long chatID) {
         String answer = EmojiParser.parseToUnicode("Привет, Любимая!," + " добро пожаловать в этого бота!"
-                 +"\nЛичность успешно подтверждена" + ":white_check_mark:\n" +
-                "Это такой бот милый поддержки и тд, иногда будут проскакивать шутки комплименты и всякого такого рода штуки.\n" +
-                "Так же, этот бот помнит всё, что ты ему отправишь, любые сообщения, так что можешь писать всё что угодно: мечты пожелания хотелки)))\n\n" +
+                + "\nЛичность успешно подтверждена" + ":white_check_mark:\n" +
+                "Это такой бот милый поддержки и тд, иногда будут проскакивать шутки комплименты и всякого такого рода штуки.\n"
+                +
+                "Так же, этот бот помнит всё, что ты ему отправишь, любые сообщения, так что можешь писать всё что угодно: мечты пожелания хотелки)))\n\n"
+                +
                 "P.S. Все текста адресованы тебе от меня, твоего медвежонка, а бот лишь посыльный\n\n" +
                 "Для получения поддержки напиши 'Поддержка!' или нажми на такую же кнопочку");
         sendMessage(chatID, answer);
     }
 
-
-    public void sendMessage(long chatID, String textToSend){
+    public void sendMessage(long chatID, String textToSend) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatID));
         message.setText(textToSend);
@@ -166,13 +168,12 @@ public class TelegramBot extends TelegramLongPollingBot {
         keyBoardsList.add(row);
         replyKeyboardMarkup.setKeyboard(keyBoardsList);
         message.setReplyMarkup(replyKeyboardMarkup);
-        //Добавление кнопок к клавиатуре(виртуальная клавиатура)
-        try{
+        // Добавление кнопок к клавиатуре(виртуальная клавиатура)
+        try {
             execute(message);
-        }catch (TelegramApiException e){
+        } catch (TelegramApiException e) {
             System.out.println(e);
         }
     }
-
 
 }
