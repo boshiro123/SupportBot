@@ -15,6 +15,10 @@ docker compose --env-file .env \
 # Ждем готовности PostgreSQL
 ./scripts/wait-for-it.sh localhost:${POSTGRESDB_LOCAL_PORT} --timeout=60 --strict -- echo "PostgreSQL готов"
 
+echo "Запуск PgAdmin..."
+docker compose --env-file .env \
+  up -d pgadmin
+
 # Ждем готовности PgAdmin
 ./scripts/wait-for-it.sh localhost:5050 --timeout=60 --strict -- echo "PgAdmin готов"
 
